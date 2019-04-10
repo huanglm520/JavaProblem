@@ -334,37 +334,310 @@ listFiles(FilenameFilter filter)返回指定当前目录中符合过滤条件的
 
 ### 18. Java 容器都有哪些？
 
+1. 数组<br>
+2. List<br>
+3. Set<br>
+4. Map<br>
+5. Vector<br>
+
 ### 19. Collection 和 Collections 有什么区别？
+
+java.util.Collection 是一个集合接口（集合类的一个顶级接口）。它提供了对集合对象进行基本操作的通用接口方法。Collection接口在Java 类库中有很多具体的实现。Collection接口的意义是为各种具体的集合提供了最大化的统一操作方式，其直接继承接口有List与Set。
+
+Collections则是集合类的一个工具类/帮助类，其中提供了一系列静态方法，用于对集合中元素进行排序、搜索以及线程安全等各种操作。
 
 ### 20. List、Set、Map 之间的区别是什么？
 
+List(列表)<br>
+List的元素以线性方式存储，可以存放重复对象，List主要有以下两个实现类：<br>
+
+ArrayList : 长度可变的数组，可以对元素进行随机的访问，向ArrayList中插入与删除元素的速度慢。 JDK8 中ArrayList扩容的实现是通过grow()方法里使用语句newCapacity = oldCapacity + (oldCapacity >> 1)（即1.5倍扩容）计算容量，然后调用Arrays.copyof()方法进行对原数组进行复制。<br>
+LinkedList: 采用链表数据结构，插入和删除速度快，但访问速度慢。<br>
+
+Set(集合)<br>
+Set中的对象不按特定(HashCode)的方式排序，并且没有重复对象，Set主要有以下两个实现类：<br>
+
+HashSet： HashSet按照哈希算法来存取集合中的对象，存取速度比较快。当HashSet中的元素个数超过数组大小*loadFactor（默认值为0.75）时，就会进行近似两倍扩容（newCapacity = (oldCapacity << 1) + 1）。<br>
+TreeSet ：TreeSet实现了SortedSet接口，能够对集合中的对象进行排序。<br>
+
+Map(映射)<br>
+Map是一种把键对象和值对象映射的集合，它的每一个元素都包含一个键对象和值对象。 Map主要有以下两个实现类：<br>
+
+HashMap：HashMap基于散列表实现，其插入和查询<K,V>的开销是固定的，可以通过构造器设置容量和负载因子来调整容器的性能。<br>
+LinkedHashMap：类似于HashMap，但是迭代遍历它时，取得<K,V>的顺序是其插入次序，或者是最近最少使用(LRU)的次序。<br>
+TreeMap：TreeMap基于红黑树实现。查看<K,V>时，它们会被排序。TreeMap是唯一的带有subMap()方法的Map，subMap()可以返回一个子树。<br>
+
 ### 21. HashMap 和 Hashtable 有什么区别？
+
+HashMap和Hashtable的区别
+
+1. HashMap和Hashtable都实现了Map接口，但决定用哪一个之前先要弄清楚它们之间的分别。主要的区别有：线程安全性，同步(synchronization)，以及速度。<br>
+2. HashMap几乎可以等价于Hashtable，除了HashMap是非synchronized的，并可以接受null(HashMap可以接受为null的键值(key)和值(value)，而Hashtable则不行)。<br>
+3. HashMap是非synchronized，而Hashtable是synchronized，这意味着Hashtable是线程安全的，多个线程可以共享一个Hashtable；而如果没有正确的同步的话，多个线程是不能共享HashMap的。Java 5提供了ConcurrentHashMap，它是HashTable的替代，比HashTable的扩展性更好。<br>
+4. 另一个区别是HashMap的迭代器(Iterator)是fail-fast迭代器，而Hashtable的enumerator迭代器不是fail-fast的。所以当有其它线程改变了HashMap的结构（增加或者移除元素），将会抛出ConcurrentModificationException，但迭代器本身的remove()方法移除元素则不会抛出ConcurrentModificationException异常。但这并不是一个一定发生的行为，要看JVM。这条同样也是Enumeration和Iterator的区别。<br>
+5. 由于Hashtable是线程安全的也是synchronized，所以在单线程环境下它比HashMap要慢。如果你不需要同步，只需要单一线程，那么使用HashMap性能要好过Hashtable。<br>
+6. HashMap不能保证随着时间的推移Map中的元素次序是不变的。<br>
 
 ### 22. 如何决定使用 HashMap 还是 TreeMap？
 
+TreeMap<K,V>的Key值是要求实现java.lang.Comparable，所以迭代的时候TreeMap默认是按照Key值升序排序的；TreeMap的实现也是基于红黑树结构。
+
+而HashMap<K,V>的Key值实现散列hashCode(),分布是散列的均匀的，不支持排序；数据结构主要是桶(数组),链表或红黑树。
+
+大多情况下HashMap有更好的性能，所以大多不需要排序的时候我们会使用HashMap.
+
 ### 23. 说一下 HashMap 的实现原理？
+
+HashMap的主干是一个Entry数组。Entry是HashMap的基本组成单元，每一个Entry包含一个key-value键值对。<br>
+
+//HashMap的主干数组，可以看到就是一个Entry数组，初始值为空数组{}，主干数组的长度一定是2的次幂，至于为什么这么做，后面会有详细分析。<br>
+transient Entry<K,V>[] table = (Entry<K,V>[]) EMPTY_TABLE;<br>
+ Entry是HashMap中的一个静态内部类。代码如下<br>
+<pre>
+    static class Entry&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; {
+        final K key;
+        V value;
+        Entry&lt;K,V&gt; next;//存储指向下一个Entry的引用，单链表结构
+        int hash;//对key的hashcode值进行hash运算后得到的值，存储在Entry，避免重复计算
+
+        /**
+         * Creates new entry.
+         */
+        Entry(int h, K k, V v, Entry&lt;K,V&gt; n) {
+            value = v;
+            next = n;
+            key = k;
+            hash = h;
+        }
+
+
+ 所以，HashMap的整体结构如下
+
+　　简单来说，HashMap由数组+链表组成的，数组是HashMap的主体，链表则是主要为了解决哈希冲突而存在的，如果定位到的数组位置不含链表（当前entry的next指向null）,那么对于查找，添加等操作很快，仅需一次寻址即可；如果定位到的数组包含链表，对于添加操作，其时间复杂度为O(n)，首先遍历链表，存在即覆盖，否则新增；对于查找操作来讲，仍需遍历链表，然后通过key对象的equals方法逐一比对查找。所以，性能考虑，HashMap中的链表出现越少，性能才会越好。
+
+其他几个重要字段//实际存储的key-value键值对的个数 transient int size; //阈值，当table == {}时，该值为初始容量（初始容量默认为16）；当table被填充了，也就是为table分配内存空间后，threshold一般为 capacity*loadFactory。HashMap在进行扩容时需要参考threshold，后面会详细谈到 int threshold; //负载因子，代表了table的填充度有多少，默认是0.75 final float loadFactor; //用于快速失败，由于HashMap非线程安全，在对HashMap进行迭代时，如果期间其他线程的参与导致HashMap的结构发生变化了（比如put，remove等操作），需要抛出异常ConcurrentModificationException transient int modCount;
+
+HashMap有4个构造器，其他构造器如果用户没有传入initialCapacity 和loadFactor这两个参数，会使用默认值
+
+initialCapacity默认为16，loadFactory默认为0.75
+
+我们看下其中一个
+
+
+
+public HashMap(int initialCapacity, float loadFactor) {
+　　　　　//此处对传入的初始容量进行校验，最大不能超过MAXIMUM_CAPACITY = 1&lt;&lt;30(230)
+        if (initialCapacity &lt; 0)
+            throw new IllegalArgumentException("Illegal initial capacity: " +
+                                               initialCapacity);
+        if (initialCapacity > MAXIMUM_CAPACITY)
+            initialCapacity = MAXIMUM_CAPACITY;
+        if (loadFactor <= 0 || Float.isNaN(loadFactor))
+            throw new IllegalArgumentException("Illegal load factor: " +
+                                               loadFactor);
+
+        this.loadFactor = loadFactor;
+        threshold = initialCapacity;
+　　　　　
+        init();//init方法在HashMap中没有实际实现，不过在其子类如 linkedHashMap中就会有对应实现
+    }
+
+
+　　从上面这段代码我们可以看出，在常规构造器中，没有为数组table分配内存空间（有一个入参为指定Map的构造器例外），而是在执行put操作的时候才真正构建table数组
+
+　　OK,接下来我们来看看put操作的实现吧
+
+
+
+    public V put(K key, V value) {
+        //如果table数组为空数组{}，进行数组填充（为table分配实际内存空间），入参为threshold，此时threshold为initialCapacity 默认是1&lt;&lt;4(24=16)
+        if (table == EMPTY_TABLE) {
+            inflateTable(threshold);
+        }
+       //如果key为null，存储位置为table[0]或table[0]的冲突链上
+        if (key == null)
+            return putForNullKey(value);
+        int hash = hash(key);//对key的hashcode进一步计算，确保散列均匀
+        int i = indexFor(hash, table.length);//获取在table中的实际位置
+        for (Entry&lt;K,V&gt; e = table[i]; e != null; e = e.next) {
+        //如果该对应数据已存在，执行覆盖操作。用新value替换旧value，并返回旧value
+            Object k;
+            if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
+                V oldValue = e.value;
+                e.value = value;
+                e.recordAccess(this);
+                return oldValue;
+            }
+        }
+        modCount++;//保证并发访问时，若HashMap内部结构发生变化，快速响应失败
+        addEntry(hash, key, value, i);//新增一个entry
+        return null;
+    }    
+
+
+ 先来看看inflateTable这个方法
+
+
+
+private void inflateTable(int toSize) {
+        int capacity = roundUpToPowerOf2(toSize);//capacity一定是2的次幂
+        threshold = (int) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);//此处为threshold赋值，取capacity*loadFactor和MAXIMUM_CAPACITY+1的最小值，capaticy一定不会超过MAXIMUM_CAPACITY，除非loadFactor大于1
+        table = new Entry[capacity];
+        initHashSeedAsNeeded(capacity);
+    }
+
+
+　　inflateTable这个方法用于为主干数组table在内存中分配存储空间，通过roundUpToPowerOf2(toSize)可以确保capacity为大于或等于toSize的最接近toSize的二次幂，比如toSize=13,则capacity=16;to_size=16,capacity=16;to_size=17,capacity=32.
+
+
+
+ private static int roundUpToPowerOf2(int number) {
+        // assert number >= 0 : "number must be non-negative";
+        return number >= MAXIMUM_CAPACITY
+                ? MAXIMUM_CAPACITY
+                : (number > 1) ? Integer.highestOneBit((number - 1) << 1) : 1;
+    }
+
+
+roundUpToPowerOf2中的这段处理使得数组长度一定为2的次幂，Integer.highestOneBit是用来获取最左边的bit（其他bit位为0）所代表的数值.
+
+hash函数
+
+
+
+//这是一个神奇的函数，用了很多的异或，移位等运算，对key的hashcode进一步进行计算以及二进制位的调整等来保证最终获取的存储位置尽量分布均匀
+final int hash(Object k) {
+        int h = hashSeed;
+        if (0 != h && k instanceof String) {
+            return sun.misc.Hashing.stringHash32((String) k);
+        }
+
+        h ^= k.hashCode();
+
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return h ^ (h >>> 7) ^ (h >>> 4);
+    }
+
+
+以上hash函数计算出的值，通过indexFor进一步处理来获取实际的存储位置
+
+
+
+　　/**
+     * 返回数组下标
+     */
+    static int indexFor(int h, int length) {
+        return h & (length-1);
+    }
+
+
+h&（length-1）保证获取的index一定在数组范围内，举个例子，默认容量16，length-1=15，h=18,转换成二进制计算为
+
+        1  0  0  1  0
+    &   0  1  1  1  1
+    __________________
+        0  0  0  1  0    = 2
+　　最终计算出的index=2。有些版本的对于此处的计算会使用 取模运算，也能保证index一定在数组范围内，不过位运算对计算机来说，性能更高一些（HashMap中有大量位运算）
+
+所以最终存储位置的确定流程是这样的：
+
+
+
+再来看看addEntry的实现：
+
+
+
+void addEntry(int hash, K key, V value, int bucketIndex) {
+        if ((size >= threshold) && (null != table[bucketIndex])) {
+            resize(2 * table.length);//当size超过临界阈值threshold，并且即将发生哈希冲突时进行扩容
+            hash = (null != key) ? hash(key) : 0;
+            bucketIndex = indexFor(hash, table.length);
+        }
+
+        createEntry(hash, key, value, bucketIndex);
+    }
+
+
+　　通过以上代码能够得知，当发生哈希冲突并且size大于阈值的时候，需要进行数组扩容，扩容时，需要新建一个长度为之前数组2倍的新的数组，然后将当前的Entry数组中的元素全部传输过去，扩容后的新数组长度为之前的2倍，所以扩容相对来说是个耗资源的操作。
+</pre>
 
 ### 24. 说一下 HashSet 的实现原理？
 
+HashSet的实现原理总结如下：
+
+①是基于HashMap实现的，默认构造函数是构建一个初始容量为16，负载因子为0.75 的HashMap。封装了一个 HashMap 对象来存储所有的集合元素，所有放入 HashSet 中的集合元素实际上由 HashMap 的 key 来保存，而 HashMap 的 value 则存储了一个 PRESENT，它是一个静态的 Object 对象。
+
+②当我们试图把某个类的对象当成 HashMap的 key，或试图将这个类的对象放入 HashSet 中保存时，重写该类的equals(Object obj)方法和 hashCode() 方法很重要，而且这两个方法的返回值必须保持一致：当该类的两个的 hashCode() 返回值相同时，它们通过 equals() 方法比较也应该返回 true。通常来说，所有参与计算 hashCode() 返回值的关键属性，都应该用于作为 equals() 比较的标准。
+
+③HashSet的其他操作都是基于HashMap的。
+
 ### 25. ArrayList 和 LinkedList 的区别是什么？
+
+ArrayList和Vector使用了数组的实现，可以认为ArrayList或者Vector封装了对内部数组的操作，比如向数组中添加，删除，插入新的元素或者数据的扩展和重定向。
+
+LinkedList使用了循环双向链表数据结构。与基于数组ArrayList相比，这是两种截然不同的实现技术，这也决定了它们将适用于完全不同的工作场景。
+
+LinkedList链表由一系列表项连接而成。一个表项总是包含3个部分：元素内容，前驱表和后驱表。
 
 ### 26. 如何实现数组和 List 之间的转换？
 
+List.toArray() 和 Arrays.asList()
+
 ### 27. ArrayList 和 Vector 的区别是什么？
+
+1） Vector的方法都是同步的(Synchronized),是线程安全的(thread-safe)，而ArrayList的方法不是，由于线程的同步必然要影响性能，因此,ArrayList的性能比Vector好。<br>
+2） 当Vector或ArrayList中的元素超过它的初始大小时,Vector会将它的容量翻倍,而ArrayList只增加50%的大小，这样,ArrayList就有利于节约内存空间。
 
 ### 28. Array 和 ArrayList 有何区别？
 
+Array可以包含基本类型和对象类型，ArrayList只能包含对象类型
+
+Array大小固定，ArrayList的大小是动态变化的。
+
+ArrayList提供了更多的方法和特性：比如 ：addAll(),removeAll(),iterator()等等。
+
+对于基本数据类型，集合使用自动装箱来减少编码工作量。但是，当处理固定大小基本数据类型的时候，这种方式相对较慢。
+
 ### 29. 在 Queue 中 poll()和 remove()有什么区别？
+
+remove方法和poll方法都是删除队列的头元素，remove方法在队列为空的情况下将抛异常，而poll方法将返回null；
 
 ### 30. 哪些集合类是线程安全的？
 
+Vector：就比arraylist多了个同步化机制（线程安全），因为效率较低，现在已经不太建议使用。在web应用中，特别是前台页面，往往效率（页面响应速度）是优先考虑的。
+
+Stack：堆栈类，先进后出
+
+Hashtable：就比hashmap多了个线程安全
+
+Enumeration：枚举，相当于迭代器
+
 ### 31. 迭代器 Iterator 是什么？
+
+为了方便的处理集合中的元素,Java中出现了一个对象,该对象提供了一些方法专门处理集合中的元素.例如删除和获取集合中的元素.该对象就叫做迭代器(Iterator).
 
 ### 32. Iterator 怎么使用？有什么特点？
 
+1. Iterator遍历集合元素的过程中不允许线程对集合元素进行修改，否则会抛出ConcurrentModificationEception的异常。<br>
+2. Iterator遍历集合元素的过程中可以通过remove方法来移除集合中的元素。<br>
+3. Iterator必须依附某个Collection对象而存在，Iterator本身不具有装载数据对象的功能。<br>
+4. Iterator.remove方法删除的是上一次Iterator.next()方法返回的对象。<br>
+5. 强调以下next（）方法，该方法通过游标指向的形式返回Iterator下一个元素。<br>
+
 ### 33. Iterator 和 ListIterator 有什么区别？
 
+1. iterator()方法在set和list接口中都有定义，但是ListIterator（）仅存在于list接口中（或实现类中）；<br>
+2. ListIterator有add()方法，可以向List中添加对象，而Iterator不能<br>
+3. ListIterator和Iterator都有hasNext()和next()方法，可以实现顺序向后遍历，但是ListIterator有hasPrevious()和previous()方法，可以实现逆向（顺序向前）遍历。Iterator就不可以。<br>
+4. ListIterator可以定位当前的索引位置，nextIndex()和previousIndex()可以实现。Iterator没有此功能。<br>
+5. 都可实现删除对象，但是ListIterator可以实现对象的修改，set()方法可以实现。Iierator仅能遍历，不能修改。<br>
+
 ### 34. 怎么确保一个集合不能被修改？
+
+使用Collections.unmodifiable系列方法包装。<br>
+Collections.unmodifiableList();<br>
+Collections.unmodifiableMap();<br>
+Collections.unmodifiableSet();<br>
 
 ## 多线程
 
