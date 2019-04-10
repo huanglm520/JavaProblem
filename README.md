@@ -3,37 +3,332 @@
 
 ### 1. JDK 和 JRE 有什么区别？
 
+Jre 是java runtime environment, 是java程序的运行环境。Jdk 是java development kit，是java的开发工具包，里面包含了各种类库和工具。
+
 ### 2. == 和 equals 的区别是什么？
+
+==比较的是对象的内存地址，equals比较的是对象的数据内容。
 
 ### 3. 两个对象的 hashCode()相同，则 equals()也一定为 true，对吗？
 
+不对，hashCode()相同，equals()不一定为true；equals()为true，hashCode()一定相同。
+
 ### 4. final 在 Java 中有什么作用？
+
+final修饰变量或者对象时，该变量或者对象即为常量；final修饰方法时，该方法不可被重写；final修饰类时，该类不可被继承。
 
 ### 5. Java 中的 Math.round(-1.5) 等于多少？
 
+-1，该方法的原理是在参数的基础上加0.5后向下取整。
+
 ### 6. String 属于基础的数据类型吗？
+
+不属于，基础数据类型有：byte,short,int,long,float,double,char,boolean。
 
 ### 7. Java 中操作字符串都有哪些类？它们之间有什么区别？
 
+String，StringBuilder，StringBuffer以及Java8中新增的StringJoiner。<br>
+String是不可变字符串，不能直接修改字符串本身，线程不安全。<br>
+StringBuilder是可变字符串，线程不安全。<br>
+StringBuffer也是可变字符串，但是线程安全。<br>
+StringJoiner是Java8中新增的字符串处理类，可以使用指定的分隔符将字符串连接在一起。
+
 ### 8. String str="i"与 String str=new String(“i”)一样吗？
+
+不一样，String str="i"，这里的str指向的是静态区的"i".<br>
+String str=new String("i")，这里的str指向了一个新开辟的内存空间，内存空间中保存的数据时字符串"i"，不保存在静态区。
 
 ### 9. 如何将字符串反转？
 
+new StringBuilder(str).reverse().toString()或者new StringBuffer(str).reverse().toString()<br>
+但是要注意线程安全问题。
+
 ### 10. String 类的常用方法都有那些？
+
+1、public String()<br>
+无参构造方法，用来创建空字符串的String对象。<br>
+ 1 String str1 = new String(); <br>
+2、public String(String value)<br>
+用已知的字符串value创建一个String对象。<br>
+ 1 String str2 = new String("asdf"); 2 String str3 = new String(str2); <br>
+3、public String(char[] value)<br>
+用字符数组value创建一个String对象。<br>
+
+1 char[] value = {"a","b","c","d"};<br>
+2 String str4 = new String(value);//相当于String str4 = new String("abcd");<br>
+
+4、public String(char chars[], int startIndex, int numChars)<br>
+用字符数组chars的startIndex开始的numChars个字符创建一个String对象。<br>
+
+1 char[] value = {"a","b","c","d"};<br>
+2 String str5 = new String(value, 1, 2);//相当于String str5 = new String("bc");<br>
+
+5、public String(byte[] values)<br>
+用比特数组values创建一个String对象。<br>
+
+1 byte[] strb = new byte[]{65,66};<br>
+2 String str6 = new String(strb);//相当于String str6 = new String("AB");<br>
+四、String类常用方法<br>
+1、求字符串长度<br>
+public int length()//返回该字符串的长度<br>
+
+1 String str = new String("asdfzxc");<br>
+2 int strlength = str.length();//strlength = 7<br>
+
+2、求字符串某一位置字符<br>
+public char charAt(int index)//返回字符串中指定位置的字符；注意字符串中第一个字符索引是0，最后一个是length()-1。<br>
+
+1 String str = new String("asdfzxc");<br>
+2 char ch = str.charAt(4);//ch = z<br>
+
+3、提取子串<br>
+用String类的substring方法可以提取字符串中的子串，该方法有两种常用参数:<br>
+1)public String substring(int beginIndex)//该方法从beginIndex位置起，从当前字符串中取出剩余的字符作为一个新的字符串返回。<br>
+2)public String substring(int beginIndex, int endIndex)//该方法从beginIndex位置起，从当前字符串中取出到endIndex-1位置的字符作为一个新的字符串返回。<br>
+
+1 String str1 = new String("asdfzxc");<br>
+2 String str2 = str1.substring(2);//str2 = "dfzxc"<br>
+3 String str3 = str1.substring(2,5);//str3 = "dfz"<br>
+
+4、字符串比较<br>
+1)public int compareTo(String anotherString)//该方法是对字符串内容按字典顺序进行大小比较，通过返回的整数值指明当前字符串与参数字符串的大小关系。若当前对象比参数大则返回正整数，反之返回负整数，相等返回0。<br>
+2)public int compareToIgnore(String anotherString)//与compareTo方法相似，但忽略大小写。<br>
+3)public boolean equals(Object anotherObject)//比较当前字符串和参数字符串，在两个字符串相等的时候返回true，否则返回false。<br>
+4)public boolean equalsIgnoreCase(String anotherString)//与equals方法相似，但忽略大小写。<br>
+
+1 String str1 = new String("abc");<br>
+2 String str2 = new String("ABC");<br>
+3 int a = str1.compareTo(str2);//a>0<br>
+4 int b = str1.compareToIgnoreCase(str2);//b=0<br>
+5 boolean c = str1.equals(str2);//c=false<br>
+6 boolean d = str1.equalsIgnoreCase(str2);//d=true<br>
+
+5、字符串连接<br>
+public String concat(String str)//将参数中的字符串str连接到当前字符串的后面，效果等价于"+"。<br>
+
+1 String str = "aa".concat("bb").concat("cc");<br>
+2 相当于String str = "aa"+"bb"+"cc";<br>
+
+6、字符串中单个字符查找<br>
+1)public int indexOf(int ch/String str)//用于查找当前字符串中字符或子串，返回字符或子串在当前字符串中从左边起首次出现的位置，若没有出现则返回-1。<br>
+2)public int indexOf(int ch/String str, int fromIndex)//改方法与第一种类似，区别在于该方法从fromIndex位置向后查找。<br>
+3)public int lastIndexOf(int ch/String str)//该方法与第一种类似，区别在于该方法从字符串的末尾位置向前查找。<br>
+4)public int lastIndexOf(int ch/String str, int fromIndex)//该方法与第二种方法类似，区别于该方法从fromIndex位置向前查找。<br>
+
+1 String str = "I am a good student";<br>
+2 int a = str.indexOf('a');//a = 2<br>
+3 int b = str.indexOf("good");//b = 7<br>
+4 int c = str.indexOf("w",2);//c = -1<br>
+5 int d = str.lastIndexOf("a");//d = 5<br>
+6 int e = str.lastIndexOf("a",3);//e = 2<br>
+
+7、字符串中字符的大小写转换<br>
+1)public String toLowerCase()//返回将当前字符串中所有字符转换成小写后的新串<br>
+2)public String toUpperCase()//返回将当前字符串中所有字符转换成大写后的新串<br>
+
+1 String str = new String("asDF");<br>
+2 String str1 = str.toLowerCase();//str1 = "asdf"<br>
+3 String str2 = str.toUpperCase();//str2 = "ASDF"<br>
+
+8、字符串中字符的替换<br>
+1)public String replace(char oldChar, char newChar)//用字符newChar替换当前字符串中所有的oldChar字符，并返回一个新的字符串。<br>
+2)public String replaceFirst(String regex, String replacement)//该方法用字符replacement的内容替换当前字符串中遇到的第一个和字符串regex相匹配的子串，应将新的字符串返回。<br>
+3)public String replaceAll(String regex, String replacement)//该方法用字符replacement的内容替换当前字符串中遇到的所有和字符串regex相匹配的子串，应将新的字符串返回。<br>
+
+1 String str = "asdzxcasd";<br>
+2 String str1 = str.replace('a','g');//str1 = "gsdzxcgsd"<br>
+3 String str2 = str.replace("asd","fgh");//str2 = "fghzxcfgh"<br>
+4 String str3 = str.replaceFirst("asd","fgh");//str3 = "fghzxcasd"<br>
+5 String str4 = str.replaceAll("asd","fgh");//str4 = "fghzxcfgh"<br>
+
+9、其他类方法<br>
+1)String trim()//截去字符串两端的空格，但对于中间的空格不处理。<br>
+
+1 String str = " a sd ";<br>
+2 String str1 = str.trim();<br>
+3 int a = str.length();//a = 6<br>
+4 int b = str1.length();//b = 4<br>
+
+2)boolean statWith(String prefix)或boolean endWith(String suffix)//用来比较当前字符串的起始字符或子字符串prefix和终止字符或子字符串suffix是否和当前字符串相同，重载方法中同时还可以指定比较的开始位置offset。<br>
+
+1 String str = "asdfgh";<br>
+2 boolean a = str.statWith("as");//a = true<br>
+3 boolean b = str.endWith("gh");//b = true<br>
+
+3)regionMatches(boolean b, int firstStart, String other, int otherStart, int length)//从当前字符串的firstStart位置开始比较，取长度为length的一个子字符串，other字符串从otherStart位置开始，指定另外一个长度为length的字符串，两字符串比较，当b为true时字符串不区分大小写。<br>
+4)contains(String str)//判断参数s是否被包含在字符串中，并返回一个布尔类型的值。<br>
+
+1 String str = "student";<br>
+2 str.contains("stu");//true<br>
+3 str.contains("ok");//false<br>
+
+5)String[] split(String str)//将str作为分隔符进行字符串分解，分解后的字字符串在字符串数组中返回。<br>
+
+1 String str = "asd!qwe|zxc#";<br>
+2 String[] str1 = str.split("!|#");//str1[0] = "asd";str1[1] = "qwe";str1[2] = "zxc";<br>
+五、字符串与基本类型的转换<br>
+1、字符串转换为基本类型<br>
+java.lang包中有Byte、Short、Integer、Float、Double类的调用方法：<br>
+1)public static byte parseByte(String s)<br>
+2)public static short parseShort(String s)<br>
+3)public static short parseInt(String s)<br>
+4)public static long parseLong(String s)<br>
+5)public static float parseFloat(String s)<br>
+6)public static double parseDouble(String s)<br>
+例如：<br>
+
+1 int n = Integer.parseInt("12");<br>
+2 float f = Float.parseFloat("12.34");<br>
+3 double d = Double.parseDouble("1.124");<br>
+
+2、基本类型转换为字符串类型<br>
+String类中提供了String valueOf()放法，用作基本类型转换为字符串类型。<br>
+1)static String valueOf(char data[])<br>
+2)static String valueOf(char data[], int offset, int count)<br>
+3)static String valueOf(boolean b)<br>
+4)static String valueOf(char c)<br>
+5)static String valueOf(int i)<br>
+6)static String valueOf(long l)<br>
+7)static String valueOf(float f)<br>
+8)static String valueOf(double d)<br>
+例如：<br>
+
+1 String s1 = String.valueOf(12);<br>
+2 String s1 = String.valueOf(12.34);<br>
+
+3、进制转换<br>
+使用Long类中的方法得到整数之间的各种进制转换的方法：<br>
+Long.toBinaryString(long l)<br>
+Long.toOctalString(long l)<br>
+Long.toHexString(long l)<br>
+Long.toString(long l, int p)//p作为任意进制<br>
 
 ### 11. 抽象类必须要有抽象方法吗？
 
+抽象类可以没有抽象方法，但是如果你的一个类已经声明成了抽象类，即使这个类中没有抽象方法，它也不能再实例化，即不能直接构造一个该类的对象。
+如果一个类中有了一个抽象方法，那么这个类必须声明为抽象类，否则编译通不过。
+
 ### 12. 普通类和抽象类有哪些区别？
+
+1.抽象类不能被实例化。
+
+2.抽象类可以有构造函数，被继承时子类必须继承父类一个构造方法，抽象方法不能被声明为静态。
+
+3.抽象方法只需申明，而无需实现，抽象类中可以允许普通方法有主体
+
+4.含有抽象方法的类必须申明为抽象类
+
+5.抽象的子类必须实现抽象类中所有抽象方法，否则这个子类也是抽象类。
 
 ### 13. 抽象类能使用 final 修饰吗？
 
+不能，因为抽象类设计初衷就是一定要被继承的，而final是不允许该类被继承，显然这两个关键字是冲突的。
+
 ### 14. 接口和抽象类有什么区别？
+
+1、抽象类和接口都不能直接实例化，如果要实例化，抽象类变量必须指向实现所有抽象方法的子类对象，接口变量必须指向实现所有接口方法的类对象。
+
+2、抽象类要被子类继承，接口要被类实现。
+
+3、接口只能做方法申明，抽象类中可以做方法申明，也可以做方法实现
+
+4、接口里定义的变量只能是公共的静态的常量，抽象类中的变量是普通变量。
+
+5、抽象类里的抽象方法必须全部被子类所实现，如果子类不能全部实现父类抽象方法，那么该子类只能是抽象类。同样，一个实现接口的时候，如不能全部实现接口方法，那么该类也只能为抽象类。
+
+6、抽象方法只能申明，不能实现，接口是设计的结果 ，抽象类是重构的结果
+
+7、抽象类里可以没有抽象方法
+
+8、如果一个类里有抽象方法，那么这个类只能是抽象类
+
+9、抽象方法要被实现，所以不能是静态的，也不能是私有的。
+
+10、接口可继承接口，并可多继承接口，但类只能单根继承。
 
 ### 15. Java 中 IO 流分为几种？
 
+按流向分（站在程序角度考虑）
+
+输入流(input)
+
+输出流(output)
+
+按类型分:
+
+字节流(InputStream/OutputStream)
+
+任何文件都可以通过字节流进行传输。
+
+字符流(Reader/Writer)
+
+非纯文本文件，不能用字符流，会导致文件格式破坏，不能正常执行。
+
+节点流(低级流:直接跟输入输出源对接)
+
+FileInputStream/FileOutputStream/FileReader/FileWriter/PrintStream/PrintWriter.
+
+处理流(高级流:建立在低级流的基础上)
+
+转换流：InputStreamReader/OutputStreamWriter，字节流转字符流/字符流转字节流
+
+缓冲流：BufferedInputStream/BufferedOutputStream   BufferedReader/BufferedReader可对节点流经行包装，使读写更快
+
 ### 16. BIO、NIO、AIO 有什么区别？
 
+一、BIO
+
+在JDK1.4出来之前，我们建立网络连接的时候采用BIO模式，需要先在服务端启动一个ServerSocket，然后在客户端启动Socket来对服务端进行通信，默认情况下服务端需要对每个请求建立一堆线程等待请求，而客户端发送请求后，先咨询服务端是否有线程相应，如果没有则会一直等待或者遭到拒绝请求，如果有的话，客户端会线程会等待请求结束后才继续执行。
+
+二、NIO
+
+NIO本身是基于事件驱动思想来完成的，其主要想解决的是BIO的大并发问题： 在使用同步I/O的网络应用中，如果要同时处理多个客户端请求，或是在客户端要同时和多个服务器进行通讯，就必须使用多线程来处理。也就是说，将每一个客户端请求分配给一个线程来单独处理。这样做虽然可以达到我们的要求，但同时又会带来另外一个问题。由于每创建一个线程，就要为这个线程分配一定的内存空间（也叫工作存储器），而且操作系统本身也对线程的总数有一定的限制。如果客户端的请求过多，服务端程序可能会因为不堪重负而拒绝客户端的请求，甚至服务器可能会因此而瘫痪。
+
+NIO基于Reactor，当socket有流可读或可写入socket时，操作系统会相应的通知引用程序进行处理，应用再将流读取到缓冲区或写入操作系统。  也就是说，这个时候，已经不是一个连接就要对应一个处理线程了，而是有效的请求，对应一个线程，当连接没有数据时，是没有工作线程来处理的。
+
+BIO与NIO一个比较重要的不同，是我们使用BIO的时候往往会引入多线程，每个连接一个单独的线程；而NIO则是使用单线程或者只使用少量的多线程，每个连接共用一个线程。
+
+三、AIO
+
+与NIO不同，当进行读写操作时，只须直接调用API的read或write方法即可。这两种方法均为异步的，对于读操作而言，当有流可读取时，操作系统会将可读的流传入read方法的缓冲区，并通知应用程序；对于写操作而言，当操作系统将write方法传递的流写入完毕时，操作系统主动通知应用程序。  即可以理解为，read/write方法都是异步的，完成后会主动调用回调函数。
+
+简单来说就是：<br>
+BIO是一个连接一个线程。<br>
+NIO是一个请求一个线程。<br>
+AIO是一个有效请求一个线程。<br>
+
 ### 17. Files的常用方法都有哪些？
+
+创建：<br>
+createNewFile()在指定位置创建一个空文件，成功就返回true，如果已存在就不创建，然后返回false。<br>
+mkdir()  在指定位置创建一个单级文件夹。<br>
+mkdirs()  在指定位置创建一个多级文件夹。<br>
+renameTo(File dest)如果目标文件与源文件是在同一个路径下，那么renameTo的作用是重命名， 如果目标文件与源文件不是在同一个路径下，那么renameTo的作用就是剪切，而且还不能操作文件夹。 <br>
+
+删除：<br>
+delete()  删除文件或者一个空文件夹，不能删除非空文件夹，马上删除文件，返回一个布尔值。<br>
+deleteOnExit()jvm退出时删除文件或者文件夹，用于删除临时文件，无返回值。<br>
+
+判断：<br>
+exists()  文件或文件夹是否存在。<br>
+isFile()  是否是一个文件，如果不存在，则始终为false。<br>
+isDirectory()  是否是一个目录，如果不存在，则始终为false。<br>
+isHidden()  是否是一个隐藏的文件或是否是隐藏的目录。<br>
+isAbsolute()  测试此抽象路径名是否为绝对路径名。<br>
+
+获取：<br>
+getName()  获取文件或文件夹的名称，不包含上级路径。<br>
+getAbsolutePath()获取文件的绝对路径，与文件是否存在没关系。<br>
+length()  获取文件的大小（字节数），如果文件不存在则返回0L，如果是文件夹也返回0L。<br>
+getParent()  返回此抽象路径名父目录的路径名字符串；如果此路径名没有指定父目录，则返回null。<br>
+lastModified()获取最后一次被修改的时间。<br>
+
+文件夹相关：<br>
+static File[] listRoots()列出所有的根目录（Window中就是所有系统的盘符）<br>
+list()  返回目录下的文件或者目录名，包含隐藏文件。对于文件这样操作会返回null。<br>
+listFiles()  返回目录下的文件或者目录对象（File类实例），包含隐藏文件。对于文件这样操作会返回null。<br>
+list(FilenameFilter filter)返回指定当前目录中符合过滤条件的子文件或子目录。对于文件这样操作会返回null。<br>
+listFiles(FilenameFilter filter)返回指定当前目录中符合过滤条件的子文件或子目录。对于文件这样操作会返回null。<br>
 
 ## 容器
 
